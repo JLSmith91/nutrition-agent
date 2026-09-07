@@ -246,7 +246,7 @@ Return ONLY valid JSON (no markdown):
 Generate 4-6 recipes. Prioritize recipes that hit the protein target. Return only JSON.`;
 
     try {
-      const response = await fetch("https://claude-proxy-gb7o.onrender.com/api/messages", {
+      const response = await fetch("https://claude-proxy-kxgv.onrender.com/api/messages", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
