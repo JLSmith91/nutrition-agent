@@ -159,13 +159,10 @@ Return ONLY a valid JSON object (no markdown):
 Generate a FULL 7-day weekly plan. Be specific with meal names and descriptions. Make this genuinely useful and scientifically sound for the stated goal.`;
 
     try {
-      const response = await fetch("https://api.anthropic.com/v1/messages", {
+      const response = await fetch("https://claude-proxy-kxgv.onrender.com/api/messages", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "x-api-key": "sk-ant-api03-YOURKEY",
-          "anthropic-version": "2023-06-01",
-          "anthropic-dangerous-direct-browser-access": "true",
         },
         body: JSON.stringify({
           model: "claude-sonnet-4-6",
