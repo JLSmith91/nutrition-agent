@@ -398,24 +398,31 @@ Generate 4-6 recipes. Prioritize recipes that hit the protein target. Return onl
               </div>
             )}
 
-            {/* Step 4 - Timeline + Notes */}
+{/* Step 4 - Plan Days + Notes */}
             {step === 4 && (
               <div>
                 <div style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: "22px", fontWeight: 700, color: COLORS.text, marginBottom: "8px", letterSpacing: "-0.02em" }}>Final details</div>
-                <div style={{ fontSize: "13px", color: COLORS.textDim, marginBottom: "24px" }}>Optional but helpful for a more targeted plan.</div>
+                <div style={{ fontSize: "13px", color: COLORS.textDim, marginBottom: "24px" }}>Choose your plan length — you can repeat it each week.</div>
 
                 <div style={{ marginBottom: "20px" }}>
-                  <div style={{ fontSize: "11px", fontWeight: 600, color: COLORS.accentDim, letterSpacing: "0.1em", textTransform: "uppercase", marginBottom: "10px" }}>Timeline / Goal Date</div>
-                  <div style={{ display: "flex", flexWrap: "wrap", gap: "8px" }}>
-                    {["4 weeks", "8 weeks", "3 months", "6 months", "1 year", "Lifestyle change"].map(t => (
-                      <button key={t} onClick={() => setTimeline(t)} style={{ padding: "8px 16px", background: timeline === t ? COLORS.accentPale : COLORS.surface, border: `1px solid ${timeline === t ? COLORS.accent : COLORS.border}`, borderRadius: "20px", color: timeline === t ? COLORS.accent : COLORS.textDim, cursor: "pointer", fontFamily: "'Inter', sans-serif", fontSize: "13px", transition: "all 0.15s" }}>{t}</button>
+                  <div style={{ fontSize: "11px", fontWeight: 600, color: COLORS.accentDim, letterSpacing: "0.1em", textTransform: "uppercase", marginBottom: "10px" }}>Plan Length</div>
+                  <div style={{ display: "flex", gap: "10px" }}>
+                    {[
+                      { days: "3", label: "3 Days", desc: "Quick start, repeat weekly" },
+                      { days: "5", label: "5 Days", desc: "Weekday plan, flexible weekends" },
+                      { days: "7", label: "7 Days", desc: "Full weekly plan" },
+                    ].map(t => (
+                      <button key={t.days} onClick={() => setTimeline(t.days)} style={{ flex: 1, padding: "14px 16px", background: timeline === t.days ? COLORS.accentPale : COLORS.surface, border: `1px solid ${timeline === t.days ? COLORS.accent : COLORS.border}`, borderRadius: "10px", color: timeline === t.days ? COLORS.accent : COLORS.textDim, cursor: "pointer", fontFamily: "'Inter', sans-serif", textAlign: "left", transition: "all 0.15s" }}>
+                        <div style={{ fontSize: "16px", fontWeight: 700, marginBottom: "4px" }}>{t.label}</div>
+                        <div style={{ fontSize: "11px", opacity: 0.7 }}>{t.desc}</div>
+                      </button>
                     ))}
                   </div>
                 </div>
 
                 <div style={{ marginBottom: "32px" }}>
-                  <div style={{ fontSize: "11px", fontWeight: 600, color: COLORS.accentDim, letterSpacing: "0.1em", textTransform: "uppercase", marginBottom: "8px" }}>Anything else?</div>
-                  <textarea value={notes} onChange={e => setNotes(e.target.value)} placeholder="e.g. I have a wedding in 3 months, I work night shifts, I struggle with snacking at night, I love cooking..." style={{ width: "100%", minHeight: "80px", background: COLORS.surface2, border: `1px solid ${COLORS.border}`, color: COLORS.text, padding: "12px 14px", fontSize: "13px", borderRadius: "8px", fontFamily: "'Inter', sans-serif" }} />
+                  <div style={{ fontSize: "11px", fontWeight: 600, color: COLORS.accentDim, letterSpacing: "0.1em", textTransform: "uppercase", marginBottom: "8px" }}>Anything else? <span style={{ color: COLORS.muted, fontWeight: 400, textTransform: "none", letterSpacing: 0 }}>(optional)</span></div>
+                  <textarea value={notes} onChange={e => setNotes(e.target.value)} placeholder="e.g. I work night shifts, I struggle with snacking, I love cooking, I hate meal prep..." style={{ width: "100%", minHeight: "80px", background: COLORS.surface2, border: `1px solid ${COLORS.border}`, color: COLORS.text, padding: "12px 14px", fontSize: "13px", borderRadius: "8px", fontFamily: "'Inter', sans-serif" }} />
                 </div>
               </div>
             )}
