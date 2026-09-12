@@ -48,6 +48,12 @@ const RESTRICTIONS = [
   "Egg free", "Soy free", "Kosher", "Halal"
 ];
 
+const PLAN_DAYS = [
+  { days: "3", label: "3 Days", desc: "Quick start, repeat weekly" },
+  { days: "5", label: "5 Days", desc: "Weekday plan, flexible weekends" },
+  { days: "7", label: "7 Days", desc: "Full weekly plan" },
+];
+
 export default function NutritionAgent() {
   const [step, setStep] = useState(1);
   const [goal, setGoal] = useState("");
@@ -55,7 +61,7 @@ export default function NutritionAgent() {
   const [activityLevel, setActivityLevel] = useState("");
   const [dietStyle, setDietStyle] = useState("");
   const [restrictions, setRestrictions] = useState([]);
-  const [timeline, setTimeline] = useState("");
+  const [planDays, setPlanDays] = useState("5");
   const [notes, setNotes] = useState("");
   const [loading, setLoading] = useState(false);
   const [plan, setPlan] = useState(null);
@@ -86,22 +92,21 @@ export default function NutritionAgent() {
     const selectedGoal = GOALS.find(g => g.id === goal);
     const selectedActivity = ACTIVITY_LEVELS.find(a => a.id === activityLevel);
 
-    const prompt = `You are a world-class registered dietitian and sports nutritionist with expertise across all health conditions. Create a comprehensive, personalized nutrition plan.
+    const prompt = `You are a registered dietitian. Create a concise personalized nutrition plan.
 
-CLIENT PROFILE:
-- Primary Goal: ${selectedGoal?.label} — ${selectedGoal?.desc}
-- Age: ${stats.age}, Gender: ${stats.gender}
-- Weight: ${stats.weight} lbs, Height: ${stats.height}
-- Activity Level: ${selectedActivity?.label} (${selectedActivity?.desc})
-- Diet Style: ${dietStyle}
-- Dietary Restrictions: ${restrictions.length > 0 ? restrictions.join(", ") : "None"}
-- Timeline: ${timeline || "No specific timeline"}
-${notes ? `- Additional notes: ${notes}` : ""}
+CLIENT:
+- Goal: ${selectedGoal?.label}
+- Age: ${stats.age}, Gender: ${stats.gender}, Weight: ${stats.weight} lbs, Height: ${stats.height}
+- Activity: ${selectedActivity?.label}
+- Diet: ${dietStyle}
+- Restrictions: ${restrictions.length > 0 ? restrictions.join(", ") : "None"}
+- Plan: ${planDays} days (repeatable weekly)
+${notes ? `- Notes: ${notes}` : ""}
 
-Return ONLY a valid JSON object (no markdown):
+Return ONLY valid JSON (no markdown):
 {
-  "planName": "Personalized plan name",
-  "summary": "2-3 sentence overview of this plan and approach",
+  "planName": "Short plan name",
+  "summary": "2 sentence overview.",
   "dailyTargets": {
     "calories": 2200,
     "protein": 165,
@@ -110,63 +115,40 @@ Return ONLY a valid JSON object (no markdown):
     "fiber": 30,
     "water": 3.5
   },
-  "macroRationale": "2 sentences explaining why these specific macros suit this person's goal",
+  "macroRationale": "One sentence explaining these macros.",
   "weeklyPlan": [
     {
-      "day": "Monday",
-      "theme": "High Protein Day",
+      "day": "Day 1",
+      "theme": "Theme name",
       "totalCalories": 2200,
       "meals": [
-        {
-          "type": "Breakfast",
-          "name": "Meal name",
-          "description": "What's in it and how to prepare it briefly",
-          "calories": 450,
-          "protein": 35,
-          "carbs": 40,
-          "fats": 12
-        },
-        { "type": "Lunch", "name": "...", "description": "...", "calories": 550, "protein": 45, "carbs": 50, "fats": 18 },
-        { "type": "Dinner", "name": "...", "description": "...", "calories": 650, "protein": 50, "carbs": 60, "fats": 22 },
-        { "type": "Snack", "name": "...", "description": "...", "calories": 200, "protein": 15, "carbs": 20, "fats": 6 }
+        { "type": "Breakfast", "name": "Meal name", "description": "One sentence.", "calories": 450, "protein": 35, "carbs": 40, "fats": 12 },
+        { "type": "Lunch", "name": "Meal name", "description": "One sentence.", "calories": 550, "protein": 45, "carbs": 50, "fats": 18 },
+        { "type": "Dinner", "name": "Meal name", "description": "One sentence.", "calories": 650, "protein": 50, "carbs": 60, "fats": 22 },
+        { "type": "Snack", "name": "Snack name", "description": "One sentence.", "calories": 200, "protein": 15, "carbs": 20, "fats": 6 }
       ]
     }
   ],
-  "monthlyProgression": [
-    { "week": "Weeks 1-2", "focus": "Adaptation phase focus", "adjustment": "What to do or change" },
-    { "week": "Weeks 3-4", "focus": "Building phase", "adjustment": "Progressive adjustment" },
-    { "week": "Month 2", "focus": "Momentum phase", "adjustment": "How to progress" },
-    { "week": "Month 3+", "focus": "Optimization", "adjustment": "Long-term strategy" }
-  ],
+  "weeklyGoals": ["Goal 1", "Goal 2", "Goal 3"],
+  "nutritionTips": ["Tip 1", "Tip 2", "Tip 3"],
+  "foodsToEat": ["food1", "food2", "food3", "food4", "food5"],
+  "foodsToLimit": ["food1", "food2", "food3"],
   "supplements": [
-    { "name": "Supplement name", "dose": "Amount and timing", "reason": "Why it helps this goal" }
+    { "name": "Supplement", "dose": "Amount and timing", "reason": "Why it helps." }
   ],
-  "weeklyGoals": [
-    "Specific measurable goal 1",
-    "Specific measurable goal 2",
-    "Specific measurable goal 3"
-  ],
-  "nutritionTips": [
-    "Practical tip 1 specific to this person's goal",
-    "Practical tip 2",
-    "Practical tip 3"
-  ],
-  "foodsToEat": ["food 1", "food 2", "food 3", "food 4", "food 5", "food 6", "food 7", "food 8"],
-  "foodsToLimit": ["food 1", "food 2", "food 3", "food 4"],
-  "warningSign": "One sign that would indicate the plan needs adjustment"
+  "nutritionNote": "One sentence nutrition advice.",
+  "recoveryNote": "One sentence recovery advice."
 }
 
-Generate a FULL 7-day weekly plan. Be specific with meal names and descriptions. Make this genuinely useful and scientifically sound for the stated goal.`;
+Generate exactly ${planDays} days. Keep all descriptions to one sentence. Return only JSON.`;
 
     try {
       const response = await fetch("https://claude-proxy-kxgv.onrender.com/api/messages", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           model: "claude-sonnet-4-6",
-          max_tokens: 6000,
+          max_tokens: 4096,
           messages: [{ role: "user", content: prompt }],
         }),
       });
@@ -183,12 +165,18 @@ Generate a FULL 7-day weekly plan. Be specific with meal names and descriptions.
       let jsonStr = clean.slice(start, end + 1);
       jsonStr = jsonStr.replace(/,(\s*[}\]])/g, "$1");
       jsonStr = jsonStr.replace(/[\u0000-\u001F\u007F-\u009F]/g, " ");
+      jsonStr = jsonStr.replace(/\n/g, " ");
 
       let parsed;
       try {
         parsed = JSON.parse(jsonStr);
       } catch {
-        throw new Error("JSON parse failed — try again");
+        jsonStr = jsonStr.replace(/,(\s*[}\]])/g, "$1");
+        try {
+          parsed = JSON.parse(jsonStr);
+        } catch {
+          throw new Error("JSON parse failed — try again");
+        }
       }
 
       setPlan(parsed);
@@ -205,17 +193,13 @@ Generate a FULL 7-day weekly plan. Be specific with meal names and descriptions.
     setFridgeLoading(true);
     setFridgeRecipes(null);
 
-    const prompt = `You are a nutrition-focused chef. Generate recipes using ONLY the available ingredients that also meet these specific nutritional targets.
+    const prompt = `You are a nutrition-focused chef. Generate recipes using ONLY these ingredients that meet these macro targets.
 
-NUTRITIONAL TARGETS (per meal):
-- Daily calories: ${plan.dailyTargets?.calories} (aim for ~${Math.round(plan.dailyTargets?.calories / 3)} per main meal)
-- Daily protein: ${plan.dailyTargets?.protein}g (aim for ~${Math.round(plan.dailyTargets?.protein / 3)}g per main meal)
-- Diet style: ${dietStyle}
-- Restrictions: ${restrictions.length > 0 ? restrictions.join(", ") : "None"}
-- Goal: ${GOALS.find(g => g.id === goal)?.label}
+TARGETS (per meal): ~${Math.round((plan.dailyTargets?.calories || 2000) / 3)} calories, ~${Math.round((plan.dailyTargets?.protein || 150) / 3)}g protein
+Diet: ${dietStyle}, Restrictions: ${restrictions.length > 0 ? restrictions.join(", ") : "None"}
+Goal: ${GOALS.find(g => g.id === goal)?.label}
 
-AVAILABLE INGREDIENTS:
-${fridgeItems}
+INGREDIENTS: ${fridgeItems}
 
 Return ONLY valid JSON (no markdown):
 {
@@ -223,8 +207,8 @@ Return ONLY valid JSON (no markdown):
     {
       "id": "1",
       "name": "Recipe name",
-      "mealType": "Breakfast/Lunch/Dinner/Snack",
-      "description": "Brief description",
+      "mealType": "Breakfast",
+      "description": "One sentence.",
       "cookTime": "20 mins",
       "difficulty": "Easy",
       "servings": 1,
@@ -232,25 +216,23 @@ Return ONLY valid JSON (no markdown):
       "protein": 35,
       "carbs": 40,
       "fats": 12,
-      "goalAlignment": "How well this fits their nutrition goal",
+      "goalAlignment": "One sentence.",
       "ingredients": ["ingredient with amount"],
       "steps": ["Step 1", "Step 2", "Step 3"],
-      "missingIngredients": ["any small items needed"]
+      "missingIngredients": ["any needed items"]
     }
   ]
 }
 
-Generate 4-6 recipes. Prioritize recipes that hit the protein target. Return only JSON.`;
+Generate 4 recipes. Prioritize protein. Return only JSON.`;
 
     try {
       const response = await fetch("https://claude-proxy-kxgv.onrender.com/api/messages", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           model: "claude-sonnet-4-6",
-          max_tokens: 4096,
+          max_tokens: 3000,
           messages: [{ role: "user", content: prompt }],
         }),
       });
@@ -276,8 +258,6 @@ Generate 4-6 recipes. Prioritize recipes that hit the protein target. Return onl
     }
   }
 
-  const tabs = ["overview", "weekly", "monthly", "fridge"];
-
   return (
     <div style={{ minHeight: "100vh", background: COLORS.bg, color: COLORS.text, fontFamily: "'Inter', system-ui, sans-serif" }}>
       <style>{`
@@ -290,7 +270,6 @@ Generate 4-6 recipes. Prioritize recipes that hit the protein target. Return onl
         ::-webkit-scrollbar-thumb { background: #2d3748; border-radius: 2px; }
       `}</style>
 
-      {/* Header */}
       <div style={{ borderBottom: `1px solid ${COLORS.border}`, padding: "18px 32px", display: "flex", alignItems: "center", justifyContent: "space-between", background: COLORS.surface }}>
         <div style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontWeight: 700, fontSize: "16px", color: COLORS.text, letterSpacing: "-0.02em" }}>
           🥗 Nutrition <span style={{ color: COLORS.accent }}>Agent</span>
@@ -304,20 +283,17 @@ Generate 4-6 recipes. Prioritize recipes that hit the protein target. Return onl
 
       <div style={{ maxWidth: "900px", margin: "0 auto", padding: "40px 32px" }}>
 
-        {/* Onboarding */}
         {!plan && !loading && (
           <>
-            {/* Progress bar */}
             <div style={{ display: "flex", gap: "8px", marginBottom: "32px" }}>
               {[1, 2, 3, 4].map(s => (
                 <div key={s} style={{ flex: 1, height: "3px", borderRadius: "2px", background: s <= step ? COLORS.accent : COLORS.border, transition: "background 0.3s" }} />
               ))}
             </div>
 
-            {/* Step 1 - Goal */}
             {step === 1 && (
               <div>
-                <div style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: "22px", fontWeight: 700, color: COLORS.text, marginBottom: "8px", letterSpacing: "-0.02em" }}>What's your primary health goal?</div>
+                <div style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: "22px", fontWeight: 700, color: COLORS.text, marginBottom: "8px", letterSpacing: "-0.02em" }}>What is your primary health goal?</div>
                 <div style={{ fontSize: "13px", color: COLORS.textDim, marginBottom: "24px" }}>Your plan will be built around this goal.</div>
                 <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(200px, 1fr))", gap: "10px", marginBottom: "32px" }}>
                   {GOALS.map(g => (
@@ -331,12 +307,10 @@ Generate 4-6 recipes. Prioritize recipes that hit the protein target. Return onl
               </div>
             )}
 
-            {/* Step 2 - Stats */}
             {step === 2 && (
               <div>
                 <div style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: "22px", fontWeight: 700, color: COLORS.text, marginBottom: "8px", letterSpacing: "-0.02em" }}>Tell me about yourself</div>
                 <div style={{ fontSize: "13px", color: COLORS.textDim, marginBottom: "24px" }}>Used to calculate your exact calorie and macro targets.</div>
-
                 <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px", marginBottom: "20px" }}>
                   {[
                     { label: "Age", key: "age", placeholder: "e.g. 32" },
@@ -357,7 +331,6 @@ Generate 4-6 recipes. Prioritize recipes that hit the protein target. Return onl
                     </div>
                   </div>
                 </div>
-
                 <div style={{ marginBottom: "32px" }}>
                   <div style={{ fontSize: "11px", fontWeight: 600, color: COLORS.accentDim, letterSpacing: "0.1em", textTransform: "uppercase", marginBottom: "10px" }}>Activity Level</div>
                   <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
@@ -372,12 +345,10 @@ Generate 4-6 recipes. Prioritize recipes that hit the protein target. Return onl
               </div>
             )}
 
-            {/* Step 3 - Diet */}
             {step === 3 && (
               <div>
                 <div style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: "22px", fontWeight: 700, color: COLORS.text, marginBottom: "8px", letterSpacing: "-0.02em" }}>Your dietary preferences</div>
                 <div style={{ fontSize: "13px", color: COLORS.textDim, marginBottom: "24px" }}>This shapes the foods and meals in your plan.</div>
-
                 <div style={{ marginBottom: "20px" }}>
                   <div style={{ fontSize: "11px", fontWeight: 600, color: COLORS.accentDim, letterSpacing: "0.1em", textTransform: "uppercase", marginBottom: "10px" }}>Eating Style</div>
                   <div style={{ display: "flex", flexWrap: "wrap", gap: "8px" }}>
@@ -386,7 +357,6 @@ Generate 4-6 recipes. Prioritize recipes that hit the protein target. Return onl
                     ))}
                   </div>
                 </div>
-
                 <div style={{ marginBottom: "32px" }}>
                   <div style={{ fontSize: "11px", fontWeight: 600, color: COLORS.accentDim, letterSpacing: "0.1em", textTransform: "uppercase", marginBottom: "10px" }}>Restrictions / Allergies</div>
                   <div style={{ display: "flex", flexWrap: "wrap", gap: "8px" }}>
@@ -398,36 +368,25 @@ Generate 4-6 recipes. Prioritize recipes that hit the protein target. Return onl
               </div>
             )}
 
-{/* Step 4 - Plan Days + Notes */}
             {step === 4 && (
               <div>
-                <div style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: "22px", fontWeight: 700, color: COLORS.text, marginBottom: "8px", letterSpacing: "-0.02em" }}>Final details</div>
-                <div style={{ fontSize: "13px", color: COLORS.textDim, marginBottom: "24px" }}>Choose your plan length — you can repeat it each week.</div>
-
-                <div style={{ marginBottom: "20px" }}>
-                  <div style={{ fontSize: "11px", fontWeight: 600, color: COLORS.accentDim, letterSpacing: "0.1em", textTransform: "uppercase", marginBottom: "10px" }}>Plan Length</div>
-                  <div style={{ display: "flex", gap: "10px" }}>
-                    {[
-                      { days: "3", label: "3 Days", desc: "Quick start, repeat weekly" },
-                      { days: "5", label: "5 Days", desc: "Weekday plan, flexible weekends" },
-                      { days: "7", label: "7 Days", desc: "Full weekly plan" },
-                    ].map(t => (
-                      <button key={t.days} onClick={() => setTimeline(t.days)} style={{ flex: 1, padding: "14px 16px", background: timeline === t.days ? COLORS.accentPale : COLORS.surface, border: `1px solid ${timeline === t.days ? COLORS.accent : COLORS.border}`, borderRadius: "10px", color: timeline === t.days ? COLORS.accent : COLORS.textDim, cursor: "pointer", fontFamily: "'Inter', sans-serif", textAlign: "left", transition: "all 0.15s" }}>
-                        <div style={{ fontSize: "16px", fontWeight: 700, marginBottom: "4px" }}>{t.label}</div>
-                        <div style={{ fontSize: "11px", opacity: 0.7 }}>{t.desc}</div>
-                      </button>
-                    ))}
-                  </div>
+                <div style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: "22px", fontWeight: 700, color: COLORS.text, marginBottom: "8px", letterSpacing: "-0.02em" }}>Choose your plan length</div>
+                <div style={{ fontSize: "13px", color: COLORS.textDim, marginBottom: "24px" }}>Each plan is repeatable — cycle it weekly for consistent results.</div>
+                <div style={{ display: "flex", gap: "10px", marginBottom: "20px" }}>
+                  {PLAN_DAYS.map(t => (
+                    <button key={t.days} onClick={() => setPlanDays(t.days)} style={{ flex: 1, padding: "16px", background: planDays === t.days ? COLORS.accentPale : COLORS.surface, border: `1px solid ${planDays === t.days ? COLORS.accent : COLORS.border}`, borderRadius: "10px", color: planDays === t.days ? COLORS.accent : COLORS.textDim, cursor: "pointer", fontFamily: "'Inter', sans-serif", textAlign: "left", transition: "all 0.15s" }}>
+                      <div style={{ fontSize: "18px", fontWeight: 700, marginBottom: "4px" }}>{t.label}</div>
+                      <div style={{ fontSize: "11px", opacity: 0.7 }}>{t.desc}</div>
+                    </button>
+                  ))}
                 </div>
-
                 <div style={{ marginBottom: "32px" }}>
                   <div style={{ fontSize: "11px", fontWeight: 600, color: COLORS.accentDim, letterSpacing: "0.1em", textTransform: "uppercase", marginBottom: "8px" }}>Anything else? <span style={{ color: COLORS.muted, fontWeight: 400, textTransform: "none", letterSpacing: 0 }}>(optional)</span></div>
-                  <textarea value={notes} onChange={e => setNotes(e.target.value)} placeholder="e.g. I work night shifts, I struggle with snacking, I love cooking, I hate meal prep..." style={{ width: "100%", minHeight: "80px", background: COLORS.surface2, border: `1px solid ${COLORS.border}`, color: COLORS.text, padding: "12px 14px", fontSize: "13px", borderRadius: "8px", fontFamily: "'Inter', sans-serif" }} />
+                  <textarea value={notes} onChange={e => setNotes(e.target.value)} placeholder="e.g. I work night shifts, I struggle with snacking, I love cooking..." style={{ width: "100%", minHeight: "80px", background: COLORS.surface2, border: `1px solid ${COLORS.border}`, color: COLORS.text, padding: "12px 14px", fontSize: "13px", borderRadius: "8px", fontFamily: "'Inter', sans-serif" }} />
                 </div>
               </div>
             )}
 
-            {/* Navigation */}
             <div style={{ display: "flex", gap: "12px" }}>
               {step > 1 && (
                 <button onClick={() => setStep(s => s - 1)} style={{ padding: "12px 24px", background: "transparent", border: `1px solid ${COLORS.border}`, color: COLORS.textDim, borderRadius: "8px", fontSize: "14px", cursor: "pointer", fontFamily: "'Inter', sans-serif" }}>Back</button>
@@ -441,7 +400,6 @@ Generate 4-6 recipes. Prioritize recipes that hit the protein target. Return onl
           </>
         )}
 
-        {/* Loading */}
         {loading && (
           <div style={{ textAlign: "center", padding: "80px 0", color: COLORS.accentDim, fontSize: "13px", letterSpacing: "0.1em", animation: "pulse 1.5s ease-in-out infinite" }}>
             Building your personalized nutrition plan...
@@ -454,16 +412,12 @@ Generate 4-6 recipes. Prioritize recipes that hit the protein target. Return onl
           </div>
         )}
 
-        {/* Plan Output */}
         {plan && (
           <div>
-            {/* Plan Header */}
             <div style={{ background: COLORS.surface, border: `1px solid ${COLORS.border}`, borderRadius: "12px", padding: "28px", marginBottom: "20px", borderTop: `3px solid ${COLORS.accent}` }}>
               <div style={{ fontSize: "11px", fontWeight: 600, color: COLORS.accent, letterSpacing: "0.1em", textTransform: "uppercase", marginBottom: "8px" }}>Your Nutrition Plan</div>
               <div style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: "22px", fontWeight: 700, color: COLORS.text, marginBottom: "12px", letterSpacing: "-0.02em" }}>{plan.planName}</div>
               <p style={{ fontSize: "14px", color: COLORS.textDim, lineHeight: "1.75", marginBottom: "20px" }}>{plan.summary}</p>
-
-              {/* Macro targets */}
               {plan.dailyTargets && (
                 <div style={{ display: "grid", gridTemplateColumns: "repeat(6, 1fr)", gap: "10px", marginBottom: "16px" }}>
                   {[
@@ -482,25 +436,21 @@ Generate 4-6 recipes. Prioritize recipes that hit the protein target. Return onl
                   ))}
                 </div>
               )}
-              <p style={{ fontSize: "12px", color: COLORS.textDim, fontStyle: "italic" }}>{plan.macroRationale}</p>
+              {plan.macroRationale && <p style={{ fontSize: "12px", color: COLORS.textDim, fontStyle: "italic" }}>{plan.macroRationale}</p>}
             </div>
 
-            {/* Tabs */}
             <div style={{ display: "flex", gap: "4px", marginBottom: "20px", background: COLORS.surface, borderRadius: "10px", padding: "4px", border: `1px solid ${COLORS.border}` }}>
               {[
                 { id: "overview", label: "Overview" },
-                { id: "weekly", label: "Weekly Plan" },
-                { id: "monthly", label: "Progression" },
+                { id: "weekly", label: "Meal Plan" },
                 { id: "fridge", label: "🥦 Cook Now" },
               ].map(tab => (
                 <button key={tab.id} onClick={() => setActiveTab(tab.id)} style={{ flex: 1, padding: "8px 12px", background: activeTab === tab.id ? COLORS.accent : "transparent", color: activeTab === tab.id ? COLORS.bg : COLORS.textDim, border: "none", borderRadius: "7px", fontSize: "13px", fontWeight: activeTab === tab.id ? 600 : 400, cursor: "pointer", fontFamily: "'Inter', sans-serif", transition: "all 0.15s" }}>{tab.label}</button>
               ))}
             </div>
 
-            {/* Overview Tab */}
             {activeTab === "overview" && (
               <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
-                {/* Weekly Goals */}
                 {plan.weeklyGoals?.length > 0 && (
                   <div style={{ background: COLORS.surface, border: `1px solid ${COLORS.border}`, borderRadius: "10px", padding: "20px" }}>
                     <div style={{ fontSize: "11px", fontWeight: 600, color: COLORS.green, letterSpacing: "0.1em", textTransform: "uppercase", marginBottom: "12px" }}>Weekly Goals</div>
@@ -511,8 +461,6 @@ Generate 4-6 recipes. Prioritize recipes that hit the protein target. Return onl
                     ))}
                   </div>
                 )}
-
-                {/* Foods to eat / limit */}
                 <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px" }}>
                   {plan.foodsToEat?.length > 0 && (
                     <div style={{ background: COLORS.surface, border: `1px solid rgba(63,185,80,0.2)`, borderRadius: "10px", padding: "20px" }}>
@@ -535,8 +483,6 @@ Generate 4-6 recipes. Prioritize recipes that hit the protein target. Return onl
                     </div>
                   )}
                 </div>
-
-                {/* Tips */}
                 {plan.nutritionTips?.length > 0 && (
                   <div style={{ background: COLORS.surface, border: `1px solid ${COLORS.border}`, borderRadius: "10px", padding: "20px" }}>
                     <div style={{ fontSize: "11px", fontWeight: 600, color: COLORS.accent, letterSpacing: "0.1em", textTransform: "uppercase", marginBottom: "12px" }}>Nutrition Tips</div>
@@ -547,14 +493,12 @@ Generate 4-6 recipes. Prioritize recipes that hit the protein target. Return onl
                     ))}
                   </div>
                 )}
-
-                {/* Supplements */}
                 {plan.supplements?.length > 0 && (
                   <div style={{ background: COLORS.surface, border: `1px solid ${COLORS.border}`, borderRadius: "10px", padding: "20px" }}>
-                    <div style={{ fontSize: "11px", fontWeight: 600, color: COLORS.purple, letterSpacing: "0.1em", textTransform: "uppercase", marginBottom: "12px" }}>Supplement Recommendations</div>
+                    <div style={{ fontSize: "11px", fontWeight: 600, color: COLORS.purple, letterSpacing: "0.1em", textTransform: "uppercase", marginBottom: "12px" }}>Supplements</div>
                     {plan.supplements.map((s, i) => (
-                      <div key={i} style={{ marginBottom: "12px", paddingBottom: "12px", borderBottom: i < plan.supplements.length - 1 ? `1px solid ${COLORS.border}` : "none" }}>
-                        <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "4px" }}>
+                      <div key={i} style={{ marginBottom: "10px" }}>
+                        <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "2px" }}>
                           <span style={{ fontSize: "13px", fontWeight: 600, color: COLORS.text }}>{s.name}</span>
                           <span style={{ fontSize: "12px", color: COLORS.purple }}>{s.dose}</span>
                         </div>
@@ -563,18 +507,23 @@ Generate 4-6 recipes. Prioritize recipes that hit the protein target. Return onl
                     ))}
                   </div>
                 )}
-
-                {/* Warning */}
-                {plan.warningSign && (
-                  <div style={{ background: "rgba(251,191,36,0.06)", border: `1px solid rgba(251,191,36,0.2)`, borderRadius: "10px", padding: "16px 20px" }}>
-                    <div style={{ fontSize: "11px", fontWeight: 600, color: COLORS.yellow, letterSpacing: "0.1em", textTransform: "uppercase", marginBottom: "6px" }}>⚠ Watch For</div>
-                    <div style={{ fontSize: "13px", color: COLORS.textDim }}>{plan.warningSign}</div>
-                  </div>
-                )}
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px" }}>
+                  {plan.nutritionNote && (
+                    <div style={{ background: COLORS.surface, border: `1px solid ${COLORS.border}`, borderRadius: "10px", padding: "16px 20px" }}>
+                      <div style={{ fontSize: "11px", fontWeight: 600, color: COLORS.green, letterSpacing: "0.1em", textTransform: "uppercase", marginBottom: "8px" }}>🥗 Nutrition</div>
+                      <div style={{ fontSize: "13px", color: COLORS.textDim }}>{plan.nutritionNote}</div>
+                    </div>
+                  )}
+                  {plan.recoveryNote && (
+                    <div style={{ background: COLORS.surface, border: `1px solid ${COLORS.border}`, borderRadius: "10px", padding: "16px 20px" }}>
+                      <div style={{ fontSize: "11px", fontWeight: 600, color: COLORS.blue, letterSpacing: "0.1em", textTransform: "uppercase", marginBottom: "8px" }}>😴 Recovery</div>
+                      <div style={{ fontSize: "13px", color: COLORS.textDim }}>{plan.recoveryNote}</div>
+                    </div>
+                  )}
+                </div>
               </div>
             )}
 
-            {/* Weekly Plan Tab */}
             {activeTab === "weekly" && plan.weeklyPlan && (
               <div>
                 <div style={{ display: "flex", gap: "6px", flexWrap: "wrap", marginBottom: "16px" }}>
@@ -582,7 +531,6 @@ Generate 4-6 recipes. Prioritize recipes that hit the protein target. Return onl
                     <button key={i} onClick={() => setExpandedDay(i)} style={{ padding: "6px 14px", background: expandedDay === i ? COLORS.accent : COLORS.surface, border: `1px solid ${expandedDay === i ? COLORS.accent : COLORS.border}`, borderRadius: "20px", color: expandedDay === i ? COLORS.bg : COLORS.textDim, cursor: "pointer", fontFamily: "'Inter', sans-serif", fontSize: "12px", fontWeight: expandedDay === i ? 600 : 400 }}>{day.day}</button>
                   ))}
                 </div>
-
                 {plan.weeklyPlan[expandedDay] && (
                   <div style={{ background: COLORS.surface, border: `1px solid ${COLORS.border}`, borderRadius: "10px", padding: "24px" }}>
                     <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "20px" }}>
@@ -605,7 +553,7 @@ Generate 4-6 recipes. Prioritize recipes that hit the protein target. Return onl
                               <div>P: {meal.protein}g · C: {meal.carbs}g · F: {meal.fats}g</div>
                             </div>
                           </div>
-                          <div style={{ fontSize: "12px", color: COLORS.textDim, lineHeight: "1.6" }}>{meal.description}</div>
+                          <div style={{ fontSize: "12px", color: COLORS.textDim }}>{meal.description}</div>
                         </div>
                       ))}
                     </div>
@@ -614,50 +562,23 @@ Generate 4-6 recipes. Prioritize recipes that hit the protein target. Return onl
               </div>
             )}
 
-            {/* Monthly Progression Tab */}
-            {activeTab === "monthly" && plan.monthlyProgression && (
-              <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
-                {plan.monthlyProgression.map((phase, i) => (
-                  <div key={i} style={{ background: COLORS.surface, border: `1px solid ${COLORS.border}`, borderRadius: "10px", padding: "20px", borderLeft: `3px solid ${COLORS.accent}` }}>
-                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "8px" }}>
-                      <div style={{ fontSize: "13px", fontWeight: 600, color: COLORS.accent }}>{phase.week}</div>
-                      <div style={{ fontSize: "12px", color: COLORS.textDim }}>{phase.focus}</div>
-                    </div>
-                    <div style={{ fontSize: "13px", color: COLORS.textDim, lineHeight: "1.6" }}>{phase.adjustment}</div>
-                  </div>
-                ))}
-              </div>
-            )}
-
-            {/* Fridge Tab */}
             {activeTab === "fridge" && (
               <div>
                 <div style={{ background: COLORS.surface, border: `1px solid ${COLORS.border}`, borderRadius: "12px", padding: "24px", marginBottom: "16px" }}>
                   <div style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: "18px", fontWeight: 700, color: COLORS.text, marginBottom: "8px" }}>Cook With What You Have</div>
-                  <div style={{ fontSize: "13px", color: COLORS.textDim, marginBottom: "16px", lineHeight: "1.6" }}>
-                    Enter what's in your fridge and I'll generate recipes that fit your nutrition targets — {plan.dailyTargets?.calories} kcal, {plan.dailyTargets?.protein}g protein per day.
+                  <div style={{ fontSize: "13px", color: COLORS.textDim, marginBottom: "16px" }}>
+                    Enter what is in your fridge and I will generate recipes that fit your targets — {plan.dailyTargets?.calories} kcal, {plan.dailyTargets?.protein}g protein per day.
                   </div>
-                  <textarea
-                    value={fridgeItems}
-                    onChange={e => setFridgeItems(e.target.value)}
-                    placeholder="e.g. chicken breast, eggs, spinach, brown rice, olive oil, garlic, Greek yogurt, sweet potato..."
-                    style={{ width: "100%", minHeight: "100px", background: COLORS.surface2, border: `1px solid ${COLORS.border}`, color: COLORS.text, padding: "12px 14px", fontSize: "13px", borderRadius: "8px", fontFamily: "'Inter', sans-serif", lineHeight: "1.6", marginBottom: "16px" }}
-                  />
-                  <button
-                    onClick={findFridgeRecipes}
-                    disabled={fridgeLoading || !fridgeItems.trim()}
-                    style={{ padding: "11px 28px", background: fridgeLoading || !fridgeItems.trim() ? COLORS.surface2 : COLORS.accent, color: fridgeLoading || !fridgeItems.trim() ? COLORS.muted : COLORS.bg, border: "none", borderRadius: "8px", fontSize: "14px", fontWeight: 600, cursor: fridgeLoading || !fridgeItems.trim() ? "default" : "pointer", fontFamily: "'Inter', sans-serif" }}
-                  >
+                  <textarea value={fridgeItems} onChange={e => setFridgeItems(e.target.value)} placeholder="e.g. chicken breast, eggs, spinach, brown rice, olive oil, garlic..." style={{ width: "100%", minHeight: "100px", background: COLORS.surface2, border: `1px solid ${COLORS.border}`, color: COLORS.text, padding: "12px 14px", fontSize: "13px", borderRadius: "8px", fontFamily: "'Inter', sans-serif", marginBottom: "16px" }} />
+                  <button onClick={findFridgeRecipes} disabled={fridgeLoading || !fridgeItems.trim()} style={{ padding: "11px 28px", background: fridgeLoading || !fridgeItems.trim() ? COLORS.surface2 : COLORS.accent, color: fridgeLoading || !fridgeItems.trim() ? COLORS.muted : COLORS.bg, border: "none", borderRadius: "8px", fontSize: "14px", fontWeight: 600, cursor: fridgeLoading || !fridgeItems.trim() ? "default" : "pointer", fontFamily: "'Inter', sans-serif" }}>
                     {fridgeLoading ? "Finding recipes..." : "Find Matching Recipes"}
                   </button>
                 </div>
-
                 {fridgeLoading && (
                   <div style={{ textAlign: "center", padding: "40px 0", color: COLORS.accentDim, fontSize: "13px", animation: "pulse 1.5s ease-in-out infinite" }}>
                     Finding recipes that match your nutrition goals...
                   </div>
                 )}
-
                 {fridgeRecipes && (
                   <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
                     {fridgeRecipes.map((recipe, i) => (
@@ -682,9 +603,9 @@ Generate 4-6 recipes. Prioritize recipes that hit the protein target. Return onl
                               </div>
                               <div>
                                 <div style={{ fontSize: "10px", fontWeight: 600, color: COLORS.accent, letterSpacing: "0.1em", textTransform: "uppercase", marginBottom: "8px" }}>Steps</div>
-                                {recipe.steps?.map((step, j) => (
+                                {recipe.steps?.map((s, j) => (
                                   <div key={j} style={{ fontSize: "12px", color: COLORS.textDim, marginBottom: "6px", display: "flex", gap: "8px" }}>
-                                    <span style={{ color: COLORS.accent, flexShrink: 0 }}>{j + 1}</span>{step}
+                                    <span style={{ color: COLORS.accent, flexShrink: 0 }}>{j + 1}</span>{s}
                                   </div>
                                 ))}
                               </div>
@@ -704,6 +625,12 @@ Generate 4-6 recipes. Prioritize recipes that hit the protein target. Return onl
                 )}
               </div>
             )}
+
+            <div style={{ textAlign: "center", marginTop: "24px" }}>
+              <button onClick={() => { setPlan(null); setStep(1); setGoal(""); setFridgeRecipes(null); }} style={{ padding: "10px 28px", background: "transparent", border: `1px solid ${COLORS.border}`, color: COLORS.textDim, borderRadius: "8px", fontSize: "13px", cursor: "pointer", fontFamily: "'Inter', sans-serif" }}>
+                Generate New Plan
+              </button>
+            </div>
           </div>
         )}
       </div>
